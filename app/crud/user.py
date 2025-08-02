@@ -2,17 +2,38 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash
+from app.core.logging import logger, log_database_operation, log_user_operation
 
+@log_database_operation("SELECT")
 def get_user(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+    logger.debug(f"🔍 Getting user by ID: {user_id}")
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        log_user_operation("RETRIEVE", user.id, user.email, user.role)
+    else:
+        logger.warning(f"⚠️  User not found with ID: {user_id}")
+    return user
 
+@log_database_operation("SELECT")
 def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
+    logger.debug(f"🔍 Getting user by email: {email}")
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        log_user_operation("RETRIEVE", user.id, user.email, user.role)
+    else:
+        logger.warning(f"⚠️  User not found with email: {email}")
+    return user
 
+@log_database_operation("SELECT")
 def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(User).offset(skip).limit(limit).all()
+    logger.debug(f"🔍 Getting users with skip={skip}, limit={limit}")
+    users = db.query(User).offset(skip).limit(limit).all()
+    logger.info(f"📋 Retrieved {len(users)} users")
+    return users
 
+@log_database_operation("INSERT")
 def create_user(db: Session, user: UserCreate):
+    logger.debug(f"➕ Creating user: {user.email}, role={user.role}, tenant_id={user.tenant_id}")
     hashed_password = get_password_hash(user.password)
     db_user = User(
         email=user.email,
@@ -25,17 +46,23 @@ def create_user(db: Session, user: UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    log_user_operation("CREATE", db_user.id, db_user.email, db_user.role)
     return db_user
 
+@log_database_operation("UPDATE")
 def update_user(db: Session, user_id: int, user: UserUpdate):
+    logger.debug(f"✏️  Updating user ID: {user_id}")
     db_user = get_user(db, user_id)
     if not db_user:
+        logger.warning(f"⚠️  Cannot update user - not found with ID: {user_id}")
         return None
     
     update_data = user.dict(exclude_unset=True)
+    logger.debug(f"📝 Update data: {update_data}")
     for field, value in update_data.items():
         setattr(db_user, field, value)
     
     db.commit()
     db.refresh(db_user)
+    log_user_operation("UPDATE", db_user.id, db_user.email, db_user.role)
     return db_user 

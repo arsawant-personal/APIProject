@@ -14,10 +14,27 @@ from pathlib import Path
 def check_port(port):
     """Check if a port is in use and return PIDs"""
     try:
+        # Try lsof first
         result = subprocess.run(['lsof', '-ti', str(port)], 
                               capture_output=True, text=True)
         pids = result.stdout.strip().split('\n') if result.stdout.strip() else []
-        return [pid for pid in pids if pid]
+        pids = [pid for pid in pids if pid]
+        
+        # If lsof doesn't work, try socket connection
+        if not pids:
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                result = sock.connect_ex(('localhost', port))
+                if result == 0:
+                    # Port is in use, but we can't get PID with socket method
+                    return ['unknown']
+            except:
+                pass
+            finally:
+                sock.close()
+        
+        return pids
     except Exception:
         return []
 
@@ -63,9 +80,12 @@ def wait_for_port(port, timeout=30):
     """Wait for a port to become available (server started)"""
     start_time = time.time()
     while time.time() - start_time < timeout:
-        if check_port(port):  # Port is in use (server started)
+        pids = check_port(port)
+        if pids:  # Port is in use (server started)
+            print(f"✅ Port {port} is now in use by PIDs: {pids}")
             return True
         time.sleep(0.5)
+    print(f"❌ Port {port} did not become available within {timeout} seconds")
     return False
 
 def start_api_server():
@@ -83,8 +103,8 @@ def start_api_server():
             "--port", "8000"
         ], cwd=Path(__file__).parent)
         
-        # Wait for server to start
-        if wait_for_port(8000, timeout=10):
+        # Wait for server to start (increased timeout for database connection)
+        if wait_for_port(8000, timeout=30):
             print("✅ API server started successfully")
             return process
         else:
@@ -111,7 +131,7 @@ def start_admin_console():
         ], cwd=admin_dir)
         
         # Wait for server to start
-        if wait_for_port(8080, timeout=10):
+        if wait_for_port(8080, timeout=15):
             print("✅ Admin console started successfully")
             return process
         else:
@@ -199,15 +219,32 @@ def main():
     """Main function"""
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  python manage_servers.py start    - Start both servers")
+        print("  python manage_servers.py start [--debug] [--detailed] [--log-file] - Start both servers")
         print("  python manage_servers.py stop     - Stop all servers")
         print("  python manage_servers.py status   - Show server status")
         print("  python manage_servers.py restart  - Restart all servers")
+        print("\nLogging Options:")
+        print("  --debug     - Enable DEBUG level logging")
+        print("  --detailed  - Enable detailed function call logging")
+        print("  --log-file  - Enable logging to file (logs/app.log)")
         return
     
     command = sys.argv[1].lower()
     
+    # Parse logging options
+    enable_debug = "--debug" in sys.argv
+    enable_detailed = "--detailed" in sys.argv
+    enable_log_file = "--log-file" in sys.argv
+    
     if command == "start":
+        # Set environment variables for logging
+        if enable_debug:
+            os.environ["LOG_LEVEL"] = "DEBUG"
+        if enable_detailed:
+            os.environ["ENABLE_DETAILED_LOGGING"] = "true"
+        if enable_log_file:
+            os.environ["LOG_TO_FILE"] = "true"
+        
         start_all()
     elif command == "stop":
         stop_all()

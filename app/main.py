@@ -1,7 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import time
 from app.core.config import settings
+from app.core.logging import setup_logging, logger, log_api_request, log_api_response
 from app.api.v1.api import api_router
+
+# Initialize logging
+logger = setup_logging(
+    log_level=settings.LOG_LEVEL,
+    enable_detailed_logging=settings.ENABLE_DETAILED_LOGGING,
+    log_to_file=settings.LOG_TO_FILE,
+    log_file_path=settings.LOG_FILE_PATH
+)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -20,6 +31,25 @@ if settings.BACKEND_CORS_ORIGINS:
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Middleware to log all API requests and responses"""
+    start_time = time.time()
+    
+    # Log request
+    log_api_request(request.method, str(request.url.path))
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Calculate response time
+    response_time = time.time() - start_time
+    
+    # Log response
+    log_api_response(response.status_code, response_time)
+    
+    return response
 
 @app.get("/")
 def read_root():

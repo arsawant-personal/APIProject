@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     
+    # Logging
+    LOG_LEVEL: str = "INFO"
+    ENABLE_DETAILED_LOGGING: bool = False
+    LOG_TO_FILE: bool = False
+    LOG_FILE_PATH: Optional[str] = None
+    
     class Config:
         env_file = ".env"
 
