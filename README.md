@@ -9,6 +9,15 @@ A complete multi-tenant SaaS API infrastructure built with FastAPI, PostgreSQL, 
 - PostgreSQL
 - Git
 
+### Database Setup
+```bash
+# Start PostgreSQL (macOS)
+brew services start postgresql
+
+# Create database
+createdb saas_db
+```
+
 ### 1. Clone and Setup
 ```bash
 git clone https://github.com/arsawant-github/APIProject.git
@@ -26,17 +35,13 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Database Setup
+### 4. Environment Setup
 ```bash
-# Start PostgreSQL (macOS)
-brew services start postgresql
-
-# Create database
-createdb saas_db
-
-# Set up environment
+# Copy environment file
 cp env.example .env
-# Edit .env with your database URL (see Environment Variables section)
+
+# Update DATABASE_URL in .env to use your system username:
+# DATABASE_URL=postgresql://amit@localhost/saas_db
 ```
 
 ### 5. Database Migrations
@@ -47,7 +52,14 @@ alembic upgrade head
 
 ### 6. Start All Services
 ```bash
+# Basic startup
 python manage_servers.py start
+
+# With detailed logging
+python manage_servers.py start --debug --detailed
+
+# With file logging
+python manage_servers.py start --log-file
 ```
 
 ## 📋 Access URLs & Credentials
@@ -73,7 +85,17 @@ python manage_servers.py start
 
 ### Start All Services
 ```bash
+# Basic startup
 python manage_servers.py start
+
+# With detailed logging
+python manage_servers.py start --debug --detailed
+
+# With file logging
+python manage_servers.py start --log-file
+
+# All logging options
+python manage_servers.py start --debug --detailed --log-file
 ```
 
 ### Stop All Services
@@ -172,7 +194,7 @@ lsof -ti:8080 | xargs kill -9
 Create `.env` file from `env.example`:
 
 ```bash
-# Database
+# Database (IMPORTANT: Use your system username)
 DATABASE_URL=postgresql://amit@localhost/saas_db
 
 # Security
@@ -183,6 +205,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 # Super Admin
 SUPER_ADMIN_EMAIL=admin@yourcompany.com
 SUPER_ADMIN_PASSWORD=your-super-admin-password
+
+# Logging
+LOG_LEVEL=INFO
+ENABLE_DETAILED_LOGGING=false
+LOG_TO_FILE=false
+LOG_FILE_PATH=
 
 # Redis (optional)
 REDIS_URL=redis://localhost:6379
@@ -203,6 +231,11 @@ python test_token_generation.py
 ### Test User Creation
 ```bash
 python test_user_creation.py
+```
+
+### Test Database Connection
+```bash
+python test_db.py
 ```
 
 ## 📁 Project Structure
@@ -264,6 +297,47 @@ APIProject/
 - SQL injection protection
 - Rate limiting ready
 
+## 📊 Logging System
+
+### Comprehensive Logging
+- **API Request/Response Logging**: Track all API calls with timing
+- **Database Operation Logging**: Monitor all CRUD operations
+- **Authentication Logging**: Track login attempts and token operations
+- **Function Call Logging**: Detailed function execution tracking
+- **Error Logging**: Comprehensive error tracking with context
+
+### Logging Levels
+- **DEBUG**: Detailed function calls and database operations
+- **INFO**: API requests, user operations, authentication
+- **WARNING**: Non-critical issues and warnings
+- **ERROR**: Errors with full context and stack traces
+
+### Logging Options
+```bash
+# Basic logging (default)
+python manage_servers.py start
+
+# Debug level logging
+python manage_servers.py start --debug
+
+# Detailed function call logging
+python manage_servers.py start --detailed
+
+# File logging
+python manage_servers.py start --log-file
+
+# All options combined
+python manage_servers.py start --debug --detailed --log-file
+```
+
+### Log Output Examples
+```
+2025-08-02 14:06:39,798 | INFO | 🌐 API REQUEST: POST /api/v1/auth/token
+2025-08-02 14:06:39,832 | INFO | 👤 USER RETRIEVE: ID=1, Email=admin@yourcompany.com, Role=UserRole.SUPER_ADMIN
+2025-08-02 14:06:40,094 | INFO | 🔑 TOKEN CREATE: User=admin@yourcompany.com, Type=ACCESS
+2025-08-02 14:06:40,095 | INFO | ✅ API RESPONSE: 200 (0.297s)
+```
+
 ## 🚨 Troubleshooting
 
 ### Port Already in Use
@@ -283,6 +357,9 @@ brew services list | grep postgresql
 
 # Restart PostgreSQL
 brew services restart postgresql
+
+# Verify DATABASE_URL in .env uses your system username
+# DATABASE_URL=postgresql://amit@localhost/saas_db
 ```
 
 ### Migration Issues
@@ -299,6 +376,14 @@ source venv/bin/activate
 
 # Reinstall dependencies
 pip install -r requirements.txt
+```
+
+### SQLAlchemy Relationship Issues
+```bash
+# If you see "Mapper has no property" errors:
+# 1. Check that all relationships are properly defined
+# 2. Ensure models are imported in __init__.py
+# 3. Restart the server
 ```
 
 ## 🔄 Development Workflow
@@ -367,6 +452,6 @@ For issues and questions:
 
 ---
 
-**Last Updated**: January 2025
-**Version**: 1.0.0
-**Status**: Baseline - Ready for Development 
+**Last Updated**: August 2025
+**Version**: 1.1.0
+**Status**: Production Ready with Comprehensive Logging 
