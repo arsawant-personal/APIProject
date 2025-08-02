@@ -67,19 +67,17 @@ python manage_servers.py start --log-file
 ### 🌐 Application URLs
 - **SaaS API**: http://localhost:8000
 - **API Documentation (Swagger)**: http://localhost:8000/docs
-- **Admin API Documentation**: http://localhost:8000/admin/docs
-- **External API Documentation**: http://localhost:8000/external/docs
-- **Admin Console**: http://localhost:8080
+- **Unified Console**: http://localhost:8082
 
 ### 🔑 Login Credentials
 
-#### Admin Console Login
-- **Email**: `admin@yourcompany.com`
-- **Password**: `your-super-admin-password`
+#### Unified Console Login
+- **Super Admin**: `admin@yourcompany.com` / `your-super-admin-password`
+- **Tenant Users**: Automatically routed based on role
 
 #### API Authentication
 - **Super Admin Token**: Available in `.env` file
-- **API User Tokens**: Generated through admin console
+- **API User Tokens**: Generated through unified console
 
 ## 🛠️ Server Management
 
@@ -238,6 +236,21 @@ python test_user_creation.py
 python test_db.py
 ```
 
+### Reset Database to Initial State
+```bash
+# Interactive reset (with confirmation prompt)
+python reset_database.py
+
+# Automated reset (skip confirmation)
+python reset_database.py --confirm
+```
+
+**⚠️ WARNING**: The reset script will:
+- Delete ALL data in the database
+- Remove ALL users, tenants, and products
+- **PRESERVE** database schema and structure
+- Create only the super admin user
+
 ## 📁 Project Structure
 
 ```
@@ -262,7 +275,7 @@ APIProject/
 │   │   ├── tenant.py           # Tenant schemas
 │   │   └── user.py             # User schemas
 │   └── main.py                 # FastAPI app
-├── admin_console/              # Admin web interface
+├── unified_console/            # Unified web interface
 │   ├── index.html              # Main console page
 │   ├── script.js               # Console JavaScript
 │   ├── style.css               # Console styles
@@ -296,6 +309,143 @@ APIProject/
 - Input validation
 - SQL injection protection
 - Rate limiting ready
+
+## 🌐 External APIs
+
+### Available Endpoints
+The following external APIs are available for authenticated API users:
+
+#### Health Check
+```bash
+GET /api/v1/external/health
+```
+**Purpose**: Verify service health and authentication
+**Response**:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-08-02T23:38:39.362006",
+  "user_id": 12,
+  "tenant_id": 16,
+  "message": "Service is running normally"
+}
+```
+
+#### Service Status
+```bash
+GET /api/v1/external/status
+```
+**Purpose**: Get service information and user context
+**Response**:
+```json
+{
+  "service": "SaaS API",
+  "version": "1.0.0",
+  "status": "operational",
+  "timestamp": "2025-08-02T23:38:39.362006",
+  "user": {
+    "id": 12,
+    "email": "user@example.com",
+    "tenant_id": 16
+  }
+}
+```
+
+#### User Profile
+```bash
+GET /api/v1/external/profile
+```
+**Purpose**: Get current user profile information
+**Response**:
+```json
+{
+  "id": 12,
+  "email": "user@example.com",
+  "full_name": "Demo API User",
+  "role": "API_USER",
+  "tenant_id": 16,
+  "is_active": true,
+  "created_at": "2025-08-02T23:38:39.362006",
+  "updated_at": "2025-08-02T23:38:39.362006"
+}
+```
+
+#### Tenant Information
+```bash
+GET /api/v1/external/tenant
+```
+**Purpose**: Get tenant information for current user
+**Response**:
+```json
+{
+  "id": 16,
+  "name": "Demo Company",
+  "domain": "demo.example.com",
+  "is_active": true,
+  "created_at": "2025-08-02T23:38:39.362006",
+  "updated_at": "2025-08-02T23:38:39.362006"
+}
+```
+
+#### Ping
+```bash
+GET /api/v1/external/ping
+```
+**Purpose**: Simple connectivity test
+**Response**:
+```json
+{
+  "pong": true,
+  "timestamp": "2025-08-02T23:38:39.362006",
+  "user_id": 12
+}
+```
+
+#### Echo
+```bash
+POST /api/v1/external/echo
+```
+**Purpose**: Test endpoint that echoes back data
+**Request Body**:
+```json
+{
+  "test": "message",
+  "number": 42,
+  "boolean": true
+}
+```
+**Response**:
+```json
+{
+  "message": {"test": "message", "number": 42, "boolean": true},
+  "user_id": 12,
+  "tenant_id": 16,
+  "timestamp": "2025-08-02T23:38:39.362006",
+  "echo": true
+}
+```
+
+### Authentication
+All external APIs require Bearer token authentication:
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     http://localhost:8000/api/v1/external/health
+```
+
+### Access Control
+- **API Users**: Can access all external endpoints
+- **Tenant Admins**: Can access all external endpoints
+- **Super Admins**: Can access all external endpoints
+- **Regular Users**: Cannot access external endpoints
+
+### Testing External APIs
+```bash
+# Test all external APIs
+python test_external_apis.py
+
+# Test specific functionality
+python test_api_access.py
+```
 
 ## 📊 Logging System
 
@@ -384,6 +534,18 @@ pip install -r requirements.txt
 # 1. Check that all relationships are properly defined
 # 2. Ensure models are imported in __init__.py
 # 3. Restart the server
+```
+
+### Database Corruption or Inconsistent State
+```bash
+# Complete database reset (WARNING: Deletes all data)
+python reset_database.py --confirm
+
+# This will:
+# - Clear all data from tables (preserves structure)
+# - Verify migrations are up to date
+# - Create super admin user
+# - Verify the reset was successful
 ```
 
 ## 🔄 Development Workflow

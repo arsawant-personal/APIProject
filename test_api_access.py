@@ -73,7 +73,7 @@ def test_api_access():
         "full_name": "Test API User",
         "email": f"api{timestamp}@test.com",
         "password": "testpassword123",
-        "role": "api_user",
+        "role": "API_USER",
         "tenant_id": tenant_id,
         "is_active": True
     }
@@ -93,7 +93,7 @@ def test_api_access():
     
     # Login as API user
     api_login_data = {
-        "username": "api@test.com",
+        "username": f"api{timestamp}@test.com",
         "password": "testpassword123"
     }
     

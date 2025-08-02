@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Server Management Script for SaaS API and Admin Console
+Server Management Script for SaaS API and Unified Console
 """
 
 import subprocess
@@ -115,31 +115,31 @@ def start_api_server():
         print(f"❌ Failed to start API server: {e}")
         return None
 
-def start_admin_console():
-    """Start the admin console server"""
-    print("🌐 Starting Admin Console server...")
+def start_unified_console():
+    """Start the unified console server"""
+    print("🌐 Starting Unified Console server...")
     try:
         # Ensure port is free
-        kill_processes_on_port(8080)
+        kill_processes_on_port(8082)
         
         # Wait a moment for port to be fully released
         time.sleep(1)
         
-        admin_dir = Path(__file__).parent / "admin_console"
+        unified_dir = Path(__file__).parent / "unified_console"
         process = subprocess.Popen([
             sys.executable, "server.py"
-        ], cwd=admin_dir)
+        ], cwd=unified_dir)
         
         # Wait for server to start
-        if wait_for_port(8080, timeout=15):
-            print("✅ Admin console started successfully")
+        if wait_for_port(8082, timeout=15):
+            print("✅ Unified console started successfully")
             return process
         else:
-            print("❌ Admin console failed to start")
+            print("❌ Unified console failed to start")
             process.terminate()
             return None
     except Exception as e:
-        print(f"❌ Failed to start admin console: {e}")
+        print(f"❌ Failed to start unified console: {e}")
         return None
 
 def show_status():
@@ -148,28 +148,28 @@ def show_status():
     print("=" * 30)
     
     api_pids = check_port(8000)
-    admin_pids = check_port(8080)
+    unified_pids = check_port(8082)
     
     if api_pids:
         print(f"✅ SaaS API (port 8000): Running (PIDs: {', '.join(api_pids)})")
     else:
         print("❌ SaaS API (port 8000): Not running")
     
-    if admin_pids:
-        print(f"✅ Admin Console (port 8080): Running (PIDs: {', '.join(admin_pids)})")
+    if unified_pids:
+        print(f"✅ Unified Console (port 8082): Running (PIDs: {', '.join(unified_pids)})")
     else:
-        print("❌ Admin Console (port 8080): Not running")
+        print("❌ Unified Console (port 8082): Not running")
 
 def stop_all():
     """Stop all servers"""
     print("🛑 Stopping all servers...")
     kill_processes_on_port(8000)
-    kill_processes_on_port(8080)
+    kill_processes_on_port(8082)
     print("✅ All servers stopped")
 
 def start_all():
-    """Start both servers"""
-    print("🎯 Starting SaaS API and Admin Console...")
+    """Start all servers"""
+    print("🎯 Starting SaaS API and Unified Console...")
     print("=" * 40)
     
     # Stop any existing processes first
@@ -184,35 +184,36 @@ def start_all():
         print("❌ Failed to start API server")
         return
     
-    # Wait a moment before starting admin console
+    # Wait a moment before starting unified console
     time.sleep(2)
     
-    # Start admin console
-    admin_process = start_admin_console()
-    if not admin_process:
-        print("❌ Failed to start admin console")
+    # Start unified console
+    unified_process = start_unified_console()
+    if not unified_process:
+        print("❌ Failed to start unified console")
         api_process.terminate()
         return
     
-    print("\n🎉 Both servers are running!")
+    print("\n🎉 All servers are running!")
     print("\n📋 Access URLs:")
     print("   - SaaS API: http://localhost:8000")
     print("   - API Docs: http://localhost:8000/docs")
-    print("   - Admin Console: http://localhost:8080")
-    print("\n🔑 Admin Console Login:")
-    print("   - Email: admin@yourcompany.com")
-    print("   - Password: your-super-admin-password")
-    print("\nPress Ctrl+C to stop both servers")
+    print("   - Unified Console: http://localhost:8082")
+    print("\n🔑 Login Credentials:")
+    print("   Unified Console:")
+    print("     - Super Admin: admin@yourcompany.com / your-super-admin-password")
+    print("     - Automatically routes users based on role")
+    print("\nPress Ctrl+C to stop all servers")
     print("=" * 40)
     
     try:
-        # Wait for both processes
+        # Wait for all processes
         api_process.wait()
-        admin_process.wait()
+        unified_process.wait()
     except KeyboardInterrupt:
         print("\n🛑 Stopping servers...")
         api_process.terminate()
-        admin_process.terminate()
+        unified_process.terminate()
         print("✅ Servers stopped")
 
 def main():

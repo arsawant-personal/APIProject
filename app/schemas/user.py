@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from app.models.user import UserRole
+from app.schemas.tenant import Tenant
 
 class UserBase(BaseModel):
     email: str
@@ -23,6 +24,7 @@ class User(UserBase):
     id: int
     is_active: bool
     tenant_id: Optional[int] = None
+    tenant: Optional[Tenant] = None
     created_at: datetime
     updated_at: datetime
     
