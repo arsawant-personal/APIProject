@@ -1,24 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.api.deps import get_current_user
+from app.api.deps import get_current_api_user_or_token, get_current_api_user_with_scope
 from app.models.user import UserRole
 from app.schemas.health import HealthResponse
 from datetime import datetime
 
 router = APIRouter(prefix="/external", tags=["external"])
 
-def get_current_api_user(current_user = Depends(get_current_user)):
-    """Ensure the current user is an API user"""
-    if current_user.role not in [UserRole.API_USER, UserRole.TENANT_ADMIN, UserRole.SUPER_ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. API users only."
-        )
-    return current_user
-
 @router.get("/health", response_model=HealthResponse)
-def health_check(current_user = Depends(get_current_api_user)):
+def health_check(current_user = Depends(get_current_api_user_with_scope("health:read"))):
     """
     Health check endpoint for API users.
     
@@ -34,7 +25,7 @@ def health_check(current_user = Depends(get_current_api_user)):
     )
 
 @router.get("/status")
-def service_status(current_user = Depends(get_current_api_user)):
+def service_status(current_user = Depends(get_current_api_user_with_scope("status:read"))):
     """
     Service status endpoint.
     
@@ -53,7 +44,7 @@ def service_status(current_user = Depends(get_current_api_user)):
     }
 
 @router.get("/profile")
-def get_user_profile(current_user = Depends(get_current_api_user)):
+def get_user_profile(current_user = Depends(get_current_api_user_with_scope("profile:read"))):
     """
     Get current user profile.
     
@@ -71,7 +62,7 @@ def get_user_profile(current_user = Depends(get_current_api_user)):
     }
 
 @router.get("/tenant")
-def get_tenant_info(current_user = Depends(get_current_api_user), db: Session = Depends(get_db)):
+def get_tenant_info(current_user = Depends(get_current_api_user_with_scope("tenant:read")), db: Session = Depends(get_db)):
     """
     Get tenant information.
     
@@ -102,7 +93,7 @@ def get_tenant_info(current_user = Depends(get_current_api_user), db: Session = 
     }
 
 @router.post("/echo")
-def echo_message(message: dict, current_user = Depends(get_current_api_user)):
+def echo_message(message: dict, current_user = Depends(get_current_api_user_with_scope("echo:write"))):
     """
     Echo endpoint for testing.
     
@@ -117,7 +108,7 @@ def echo_message(message: dict, current_user = Depends(get_current_api_user)):
     }
 
 @router.get("/ping")
-def ping(current_user = Depends(get_current_api_user)):
+def ping(current_user = Depends(get_current_api_user_with_scope("ping:read"))):
     """
     Simple ping endpoint.
     

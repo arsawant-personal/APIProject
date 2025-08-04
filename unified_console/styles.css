@@ -16,6 +16,188 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Navigation Bar Fixes */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, var(--primary-color), #0056b3) !important;
+    width: 100% !important;
+    position: relative !important;
+    z-index: 1030 !important;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.navbar-nav {
+    align-items: center !important;
+}
+
+.navbar-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Ensure navbar spans full width */
+#adminDashboard .navbar,
+#tenantDashboard .navbar {
+    width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    position: relative !important;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Add visual distinction to navbar */
+.navbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+    z-index: 1031;
+}
+
+/* Container fixes for navbar */
+.container-fluid {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Content Section Fixes */
+.content-section {
+    width: 100% !important;
+    margin-top: 1rem !important;
+}
+
+.content-section h2 {
+    margin-bottom: 1.5rem !important;
+    color: var(--dark-color) !important;
+}
+
+/* Ensure proper spacing between navbar and content */
+#adminDashboard .container-fluid.mt-4 {
+    margin-top: 2rem !important;
+    padding-top: 0 !important;
+}
+
+/* Stats Cards - ensure they don't look like navigation */
+.row.mb-4 .card {
+    margin-bottom: 1rem !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.row.mb-4 .card .card-body {
+    padding: 1.5rem !important;
+    min-height: 120px !important;
+}
+
+/* Clear distinction between navbar and content */
+.navbar + .container-fluid {
+    margin-top: 2rem !important;
+}
+
+/* Ensure sidebar doesn't interfere with navbar */
+.col-md-3.col-lg-2 .card {
+    margin-top: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Specific fixes for tokens section */
+#tokensSection {
+    width: 100% !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#tokensSection .content-section {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure all content sections are properly displayed */
+.content-section:not(.d-none) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+}
+
+/* Fix for main content area */
+.col-md-9.col-lg-10 {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Ensure proper row layout */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+}
+
+/* Fix for container fluid */
+.container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Login Page Styles */
+#loginPage {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.login-card {
+    max-width: 400px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    border: none !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    background: white !important;
+}
+
+.login-card .card-body {
+    padding: 2rem !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+.login-input {
+    height: 45px !important;
+    min-height: 45px !important;
+    max-height: 45px !important;
+    border-radius: 8px !important;
+    border: 2px solid #e9ecef !important;
+    transition: all 0.2s ease !important;
+    font-size: 16px !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.login-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.login-card .btn {
+    height: 45px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+}
+
 /* Login Modal Styles */
 .modal-content {
     border: none;
@@ -34,20 +216,89 @@ body {
     font-weight: 600;
 }
 
+/* Modal Size Fixes - More Aggressive */
+.modal-dialog {
+    border-radius: 15px !important;
+    max-height: 90vh !important;
+    margin: 1.75rem auto !important;
+    max-width: 600px !important;
+}
+
+.modal-content {
+    border-radius: 15px !important;
+    max-height: 85vh !important;
+    overflow: hidden !important;
+}
+
+.modal-body {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    padding: 1.5rem !important;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem !important;
+    border-top: 1px solid #e9ecef !important;
+}
+
+/* Specific modal size constraints */
+#createTenantModal .modal-dialog {
+    max-width: 500px !important;
+}
+
+#createUserModal .modal-dialog {
+    max-width: 500px !important;
+}
+
+#createTokenModal .modal-dialog {
+    max-width: 800px !important;
+}
+
+/* Override Bootstrap modal defaults */
+.modal {
+    overflow-y: auto !important;
+}
+
+.modal.show {
+    display: block !important;
+}
+
+/* Fix Stat Cards Elongation */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-info,
+.card.bg-warning,
+.card.bg-danger {
+    height: auto !important;
+    min-height: 120px !important;
+    max-height: 150px !important;
+}
+
+.card-body {
+    padding: 1rem !important;
+    height: auto !important;
+}
+
+/* Fix Login Form Elongation */
+#loginPage .card {
+    max-width: 400px !important;
+    height: auto !important;
+}
+
+#loginPage .card-body {
+    padding: 1.5rem !important;
+    height: auto !important;
+}
+
+#loginPage .form-control {
+    height: auto !important;
+    min-height: 38px !important;
+}
+
 /* Dashboard Styles */
 .dashboard-container {
     min-height: 100vh;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.navbar {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(135deg, var(--primary-color), #0056b3) !important;
-}
-
-.navbar-brand {
-    font-weight: 600;
-    font-size: 1.25rem;
 }
 
 /* Sidebar Styles */
@@ -172,15 +423,6 @@ body {
     border-color: var(--primary-color);
 }
 
-/* Modal Styles */
-.modal-dialog {
-    border-radius: 15px;
-}
-
-.modal-content {
-    border-radius: 15px;
-}
-
 /* Alert Styles */
 .alert {
     border-radius: 10px;
@@ -211,6 +453,16 @@ body {
     
     .card-body {
         padding: 1rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem !important;
+        max-width: calc(100% - 1rem) !important;
+    }
+    
+    .login-card {
+        max-width: 90% !important;
+        margin: 0 auto !important;
     }
 }
 

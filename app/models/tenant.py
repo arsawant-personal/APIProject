@@ -15,4 +15,6 @@ class Tenant(Base):
     
     # Relationships
     users = relationship("User", back_populates="tenant")
-    products = relationship("Product", back_populates="tenant") 
+    products = relationship("Product", back_populates="tenant")
+    api_calls = relationship("APICall", back_populates="tenant")
+    tokens = relationship("Token", back_populates="tenant") 
