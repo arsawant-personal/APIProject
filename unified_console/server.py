@@ -32,6 +32,8 @@ def main():
     print("Press Ctrl+C to stop the server")
     
     try:
+        # Allow reuse of the address to prevent "Address already in use" errors
+        socketserver.TCPServer.allow_reuse_address = True
         with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
             print(f"✅ Unified Console Server running at http://localhost:{PORT}")
             print(f"🌐 Open your browser and go to: http://localhost:{PORT}")

@@ -57,6 +57,11 @@ def update_user(db: Session, user_id: int, user: UserUpdate):
         logger.warning(f"⚠️  Cannot update user - not found with ID: {user_id}")
         return None
     
+    # Prevent updating SUPER_ADMIN users
+    if db_user.role == "SUPER_ADMIN":
+        logger.warning(f"⚠️  Cannot update SUPER_ADMIN user with ID: {user_id}")
+        return None
+    
     update_data = user.dict(exclude_unset=True)
     logger.debug(f"📝 Update data: {update_data}")
     for field, value in update_data.items():
@@ -65,4 +70,22 @@ def update_user(db: Session, user_id: int, user: UserUpdate):
     db.commit()
     db.refresh(db_user)
     log_user_operation("UPDATE", db_user.id, db_user.email, db_user.role)
+    return db_user
+
+@log_database_operation("DELETE")
+def delete_user(db: Session, user_id: int):
+    logger.debug(f"🗑️  Deleting user ID: {user_id}")
+    db_user = get_user(db, user_id)
+    if not db_user:
+        logger.warning(f"⚠️  Cannot delete user - not found with ID: {user_id}")
+        return None
+    
+    # Prevent deletion of SUPER_ADMIN users
+    if db_user.role == "SUPER_ADMIN":
+        logger.warning(f"⚠️  Cannot delete SUPER_ADMIN user with ID: {user_id}")
+        return None
+    
+    db.delete(db_user)
+    db.commit()
+    log_user_operation("DELETE", db_user.id, db_user.email, db_user.role)
     return db_user 

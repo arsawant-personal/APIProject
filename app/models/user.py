@@ -24,4 +24,6 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    tenant = relationship("Tenant", back_populates="users", lazy="select") 
+    tenant = relationship("Tenant", back_populates="users", lazy="select")
+    api_calls = relationship("APICall", back_populates="user")
+    tokens = relationship("Token", back_populates="user") 

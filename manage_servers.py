@@ -14,28 +14,30 @@ from pathlib import Path
 def check_port(port):
     """Check if a port is in use and return PIDs"""
     try:
-        # Try lsof first
-        result = subprocess.run(['lsof', '-ti', str(port)], 
+        # Try lsof first (most reliable on Unix systems)
+        result = subprocess.run(['lsof', '-ti', f':{port}'], 
                               capture_output=True, text=True)
         pids = result.stdout.strip().split('\n') if result.stdout.strip() else []
         pids = [pid for pid in pids if pid]
         
-        # If lsof doesn't work, try socket connection
+        # If lsof doesn't work, try socket connection as backup
         if not pids:
             import socket
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)  # Add timeout to prevent hanging
             try:
                 result = sock.connect_ex(('localhost', port))
                 if result == 0:
                     # Port is in use, but we can't get PID with socket method
                     return ['unknown']
-            except:
+            except Exception:
                 pass
             finally:
                 sock.close()
         
         return pids
-    except Exception:
+    except Exception as e:
+        print(f"Warning: Error checking port {port}: {e}")
         return []
 
 def kill_processes_on_port(port):
@@ -44,7 +46,7 @@ def kill_processes_on_port(port):
     if pids:
         print(f"🛑 Stopping processes on port {port}...")
         for pid in pids:
-            if pid:
+            if pid and pid != 'unknown':
                 try:
                     # First try graceful termination
                     subprocess.run(['kill', pid], timeout=5)
@@ -79,12 +81,13 @@ def kill_processes_on_port(port):
 def wait_for_port(port, timeout=30):
     """Wait for a port to become available (server started)"""
     start_time = time.time()
+    print(f"⏳ Waiting for port {port} to become available...")
     while time.time() - start_time < timeout:
         pids = check_port(port)
         if pids:  # Port is in use (server started)
             print(f"✅ Port {port} is now in use by PIDs: {pids}")
             return True
-        time.sleep(0.5)
+        time.sleep(1)  # Increased sleep time for more reliable checking
     print(f"❌ Port {port} did not become available within {timeout} seconds")
     return False
 
@@ -123,15 +126,41 @@ def start_unified_console():
         kill_processes_on_port(8082)
         
         # Wait a moment for port to be fully released
-        time.sleep(1)
+        time.sleep(2)
+        
+        # Double-check port is free before starting
+        final_check = check_port(8082)
+        if final_check:
+            print(f"⚠️  Port 8082 still has processes: {final_check}")
+            print("Trying to force kill remaining processes...")
+            for pid in final_check:
+                if pid and pid != 'unknown':
+                    try:
+                        subprocess.run(['kill', '-9', pid], timeout=3)
+                    except:
+                        pass
+            time.sleep(1)
         
         unified_dir = Path(__file__).parent / "unified_console"
+        print(f"📁 Starting server from: {unified_dir}")
+        
         process = subprocess.Popen([
             sys.executable, "server.py"
-        ], cwd=unified_dir)
+        ], cwd=unified_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        # Give the process a moment to start
+        time.sleep(2)
+        
+        # Check if process is still running
+        if process.poll() is not None:
+            stdout, stderr = process.communicate()
+            print(f"❌ Server process failed to start")
+            print(f"STDOUT: {stdout.decode()}")
+            print(f"STDERR: {stderr.decode()}")
+            return None
         
         # Wait for server to start
-        if wait_for_port(8082, timeout=15):
+        if wait_for_port(8082, timeout=20):
             print("✅ Unified console started successfully")
             return process
         else:
